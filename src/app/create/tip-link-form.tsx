@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import AssetSelector from "./asset-selector";
 import axios from "axios";
-import { Asset } from "@/lib/types";
+import { Asset, AssetAccount } from "@/lib/types";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   Keypair,
@@ -36,11 +36,14 @@ import FundAccountSelect from "./fundAccount-select";
 import CreatedTipLinkModal from "@/components/linkmodal/created-tiplink-moda";
 import { useRecoilValue } from "recoil";
 import { TokenPriceAtom } from "@/recoil/tokenPrice";
+import { useSession } from "next-auth/react";
+import { WalletAtom } from "@/recoil/wallet";
 
 export default function TipLinkForm() {
   const { toast } = useToast();
   const tokenPrice=useRecoilValue(TokenPriceAtom);
   const [amount, setAmount] = useState<string>("0");
+  const session=useSession();
   const [cryptoEquivalent, setCryptoEquivalent] = useState<number>(0);
   const[signature,setSignature]=useState<string|null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset>({
@@ -48,20 +51,48 @@ export default function TipLinkForm() {
     name: "Solana",
     balance: 0,
     balanceUsd: 0,
-    icon: "/images/sol-icon.png",
+    icon: "/solana.png",
   });
-  const [selectAccount, setSelectAccount] = useState<Asset>({
-    symbol: "phantom",
+  const [selectAccount, setSelectAccount] = useState<AssetAccount>({
     name: "Solana",
-    balance: 0,
-    balanceUsd: 0,
-    icon: "/images/sol-icon.png",
+    icon: "/solana.png",
   });
+  
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const solPriceRef = useRef<number>(144);
   const { connection } = useConnection();
   const wallet = useWallet();
   const [tipLinkCreated, setTipLinkCreated] = useState(false);
+  const assets: AssetAccount[] = [];
+  const [sonu, setSonu] = useState<AssetAccount[]>([]);
+useEffect(() => {
+  if (session.status == "authenticated") {
+    setSelectAccount({
+      name: "SolLink",
+      icon: "/solana.png",
+    });
+    setSonu((prev) => [
+      ...prev,
+      {
+        name: "SolLink",
+        icon: "/solana.png",
+      },
+    ]);
+  
+  }
+  if (wallet.publicKey) {
+ setSonu((prev) => [
+   ...prev,
+   {
+     name: wallet.wallet?.adapter.name || "",
+     icon: wallet.wallet?.adapter.icon || "",
+   },
+ ]);
+
+  
+  }
+  console.log(assets);
+}, [session.status, wallet.publicKey]);
 
   const handleQuickAmountSelect = (value: number) => {
     setAmount(value.toString());
@@ -124,35 +155,13 @@ export default function TipLinkForm() {
     }));
   };
 
-  // const getTokenPrice = async () => {
-  //   try {
-  //     const response = await fetch(
-  //       "https://api.g.alchemy.com/prices/v1/tokens/by-symbol?symbols=SOL",
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: "Bearer ZReKGZNXr4h7LmdAVtvigBXbV1l22oZV",
-  //         },
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     const price = data.data[0].prices[0].value;
-  //     solPriceRef.current = parseFloat(price);
-  //   } catch (error) {
-  //     console.error("Error fetching token price:", error);
-  //   }
-  // };
-
   useEffect(() => {
-    // getTokenPrice().then(() => {
       solPriceRef.current = (tokenPrice||0);
  
       if (wallet.connected && wallet.publicKey) {
 
         getBalance(wallet.publicKey);
       }
-    // });
   }, [tokenPrice,connection, wallet.publicKey]);
 
   return (
@@ -168,7 +177,7 @@ export default function TipLinkForm() {
 
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-3xl font-bold tracking-tight transition-colors">
-          Create a TipLink
+          Create a SolLink
         </CardTitle>
         <CardDescription className="text-md max-w-sm mx-auto text-muted-foreground">
           Send crypto & NFTs to anyone, even if they don&apos;t have a wallet.
@@ -178,6 +187,7 @@ export default function TipLinkForm() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <FundAccountSelect
+            assets={sonu}
             selectedAsset={selectAccount}
             onAssetChange={setSelectAccount}
           />

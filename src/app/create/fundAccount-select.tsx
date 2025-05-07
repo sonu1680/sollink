@@ -7,9 +7,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { ChevronsUpDown, Check } from "lucide-react";
-import { Asset } from "@/lib/types";
+import { Asset, AssetAccount } from "@/lib/types";
 import Image from "next/image";
 import {
   Command,
@@ -19,47 +18,19 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 
-const assets: Asset[] = [
-  {
-    symbol: "SOL",
-    name: "Solana",
-    balance: 0.003,
-    balanceUsd: 0.38,
-    icon: "/images/sol-icon.png",
-  },
-
-  //   {
-  //     symbol: "ETH",
-  //     name: "Ethereum",
-  //     balance: 0.0002,
-  //     balanceUsd: 0.42,
-  //     icon: "/images/eth-icon.png",
-  //   },
-  //   {
-  //     symbol: "BTC",
-  //     name: "Bitcoin",
-  //     balance: 0.00001,
-  //     balanceUsd: 0.45,
-  //     icon: "/images/btc-icon.png",
-  //   },
-  //   {
-  //     symbol: "USDC",
-  //     name: "USD Coin",
-  //     balance: 0.54,
-  //     balanceUsd: 0.54,
-  //     icon: "/images/usdc-icon.png",
-  //   },
-];
 
 interface AssetSelectorProps {
-  selectedAsset: Asset;
-  onAssetChange: (asset: Asset) => void;
+  selectedAsset: AssetAccount;
+  assets: AssetAccount[];
+  onAssetChange: (asset: AssetAccount) => void;
 }
 
-export default function AssetSelector({
+export default function FundAccountSelect({
   selectedAsset,
   onAssetChange,
+  assets,
 }: AssetSelectorProps) {
+
   const [open, setOpen] = useState(false);
 
   return (
@@ -76,7 +47,7 @@ export default function AssetSelector({
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/30 rounded-full" />
               {selectedAsset.icon && (
                 <Image
-                  src="/images/sol-icon.png"
+                  src={selectedAsset.icon}
                   alt={selectedAsset.name}
                   width={24}
                   height={24}
@@ -84,20 +55,20 @@ export default function AssetSelector({
                 />
               )}
             </div>
-            <span className="font-medium">{selectedAsset.symbol}</span>
+            <span className="font-medium">{selectedAsset.name}</span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command className="w-full">
-          <CommandInput placeholder="Search assets..." />
+          <CommandInput placeholder="Search wallet..." />
           <CommandEmpty>No assets found.</CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-auto">
             {assets.map((asset) => (
               <CommandItem
-                key={asset.symbol}
-                value={asset.symbol}
+                key={asset.name}
+                value={asset.name}
                 onSelect={() => {
                   onAssetChange(asset);
                   setOpen(false);
@@ -108,7 +79,7 @@ export default function AssetSelector({
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/30 rounded-full" />
                   {asset.icon && (
                     <Image
-                      src="/images/sol-icon.png"
+                      src={asset.icon}
                       alt={asset.name}
                       width={24}
                       height={24}
@@ -116,11 +87,11 @@ export default function AssetSelector({
                     />
                   )}
                 </div>
-                <span>{asset.symbol}</span>
-                <span className="ml-auto text-xs text-muted-foreground">
+                <span>{asset.name}</span>
+                {/* <span className="ml-auto text-xs text-muted-foreground">
                   {asset.balance} (${asset.balanceUsd})
-                </span>
-                {asset.symbol === selectedAsset.symbol && (
+                </span> */}
+                {asset.name === selectedAsset.name && (
                   <Check className="ml-2 h-4 w-4 text-primary" />
                 )}
               </CommandItem>

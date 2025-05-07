@@ -1,30 +1,43 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Balance from "@/components/wallet/balance";
 import TokenContainer from "@/components/token/TokenContainer";
 import ReceivePaymentQr from "@/components/ReceivePaymentQr";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Hero } from "@/components/home/hero";
+import { HowItWorks } from "@/components/home/how-it-works";
+import { SignIn } from "@/components/home/sign-in";
+import { TrustSection } from "@/components/home/trust-section";
+import { Footer } from "@/components/home/footer";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useWallet } from "@solana/wallet-adapter-react";
+
 
 
 
 const Page = () => {
-  
+  const session=useSession();
+  const router=useRouter();
+const {publicKey}=useWallet();
+  // useEffect(() => {
+  //   if (session.status == "authenticated") {
+  //      router.push("/wallet")
+  //   }
+  //   else if (publicKey) {
+  //     router.push("/create");
+  //   }
+  // }, []);
   return (
-    <div className="main w-full  ">
-      <div className="contaner w-full flex flex-col  justify-center items-center  ">
-        {/* <Dialog open={true}>
-          <DialogContent className="w-full p-4">
-          </DialogContent>
-        </Dialog> */}
-        <div className="wallet w-full p-2 md:w-3/6 ">
-          <Balance />
-        </div>
-        <div className="wallet w-full p-2 md:w-3/6 ">
-          <TokenContainer />
-        </div>
-      </div>
-    </div>
+  
+    <main className="flex min-h-screen flex-col">
+      <Hero />
+      <HowItWorks />
+      <SignIn />
+      <TrustSection />
+      <Footer />
+    </main>
   );
 };
 

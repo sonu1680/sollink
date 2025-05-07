@@ -12,6 +12,8 @@ import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
+import { FcGoogle } from "react-icons/fc";
+
 const WalletButton=dynamic(()=>import('../WalletButtons'))
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -42,14 +44,8 @@ const session=useSession()
           href="/"
           className="font-semibold text-xl transition-colors hover:text-primary"
         >
-          wallet
+          SolLink
         </Link>
-
-        {/* <nav className="hidden md:flex items-center space-x-1">
-          <LayoutGroup>
-            <NavLinks />
-          </LayoutGroup>
-        </nav> */}
 
         <div className="flex items-center gap-2">
           <Switch
@@ -59,12 +55,25 @@ const session=useSession()
 
           <WalletButton />
           {session.status == "authenticated" ? (
-            <div className="flex flex-row gap-2 justify-between items-center bg-gray-800 px-2 rounded-sm " >
-           <Image src={session.data.user?.image|| ""} height={30} width={30} alt={'img'} className="rounded-full" />
+            <div className="flex flex-row gap-2 justify-between items-center bg-secondary px-2 rounded-sm ">
+              <Image
+                src={session.data.user?.image || ""}
+                height={30}
+                width={30}
+                alt={"img"}
+                className="rounded-full"
+              />
               <MobileMenu />
             </div>
           ) : (
-            <Button onClick={async () => await signIn()}>Google</Button>
+            <Button
+              className="bg-secondary"
+              onClick={async () => await signIn()}
+            >
+              <FcGoogle className="w-12 h-12 " />
+
+              <span className="font-bold text-primary ">Login</span>
+            </Button>
           )}
         </div>
       </div>

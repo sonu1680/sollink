@@ -1,6 +1,5 @@
 import React from 'react'
 import TipLinkForm from './tip-link-form';
-import { useSession } from 'next-auth/react';
 
 const page = () => {
 

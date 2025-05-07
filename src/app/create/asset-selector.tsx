@@ -19,33 +19,27 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 
-const assets: Asset[] = [
-  {
-    symbol: "tiplink",
-    name: "Solana",
-    balance: 0.003,
-    balanceUsd: 0.38,
-    icon: "/images/sol-icon.png",
-  },
-  {
-    symbol: "phantom",
-    name: "Solana",
-    balance: 0.003,
-    balanceUsd: 0.38,
-    icon: "/images/sol-icon.png",
-  },
-  
-];
 
 interface AssetSelectorProps {
   selectedAsset: Asset;
   onAssetChange: (asset: Asset) => void;
 }
 
-export default function FundAccountSelect({
+export default function AssetSelector({
   selectedAsset,
   onAssetChange,
 }: AssetSelectorProps) {
+
+  
+const assets: Asset[] = [
+  {
+    symbol: "SOL",
+    name: "Solana",
+    balance: selectedAsset.balance,
+    balanceUsd: selectedAsset.balanceUsd,
+    icon: "/solana.png",
+  },
+];
   const [open, setOpen] = useState(false);
 
   return (
@@ -62,7 +56,7 @@ export default function FundAccountSelect({
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/30 rounded-full" />
               {selectedAsset.icon && (
                 <Image
-                  src="/images/sol-icon.png"
+                  src="/solana.png"
                   alt={selectedAsset.name}
                   width={24}
                   height={24}
@@ -75,11 +69,11 @@ export default function FundAccountSelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="w-full  p-0" align="start">
         <Command className="w-full">
           <CommandInput placeholder="Search assets..." />
           <CommandEmpty>No assets found.</CommandEmpty>
-          <CommandGroup className="max-h-[200px] overflow-auto">
+          <CommandGroup className="max-h-[200px]  overflow-auto">
             {assets.map((asset) => (
               <CommandItem
                 key={asset.symbol}
@@ -88,13 +82,13 @@ export default function FundAccountSelect({
                   onAssetChange(asset);
                   setOpen(false);
                 }}
-                className="flex items-center gap-2 px-4 py-2 cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 cursor-pointer "
               >
                 <div className="relative w-6 h-6">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/30 rounded-full" />
                   {asset.icon && (
                     <Image
-                      src="/images/sol-icon.png"
+                      src={asset.icon}
                       alt={asset.name}
                       width={24}
                       height={24}
@@ -103,9 +97,9 @@ export default function FundAccountSelect({
                   )}
                 </div>
                 <span>{asset.symbol}</span>
-                {/* <span className="ml-auto text-xs text-muted-foreground">
-                  {asset.balance} (${asset.balanceUsd})
-                </span> */}
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {asset.balance.toFixed(2)} (${asset.balanceUsd.toFixed(2)})
+                </span>
                 {asset.symbol === selectedAsset.symbol && (
                   <Check className="ml-2 h-4 w-4 text-primary" />
                 )}
