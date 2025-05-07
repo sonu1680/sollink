@@ -9,20 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import AssetSelector from "./asset-selector";
+import FundAccountSelect from "./fundAccount-select";
+import CreatedTipLinkModal from "@/components/linkmodal/created-tiplink-moda";
 import axios from "axios";
-import { Asset, AssetAccount } from "@/lib/types";
+import bs58 from "bs58";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   Keypair,
@@ -31,21 +27,26 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import bs58 from "bs58";
-import FundAccountSelect from "./fundAccount-select";
-import CreatedTipLinkModal from "@/components/linkmodal/created-tiplink-moda";
 import { useRecoilValue } from "recoil";
 import { TokenPriceAtom } from "@/recoil/tokenPrice";
 import { useSession } from "next-auth/react";
 import { WalletAtom } from "@/recoil/wallet";
+import { Asset, AssetAccount } from "@/lib/types";
 
 export default function TipLinkForm() {
   const { toast } = useToast();
-  const tokenPrice=useRecoilValue(TokenPriceAtom);
-  const [amount, setAmount] = useState<string>("0");
-  const session=useSession();
-  const [cryptoEquivalent, setCryptoEquivalent] = useState<number>(0);
-  const[signature,setSignature]=useState<string|null>(null);
+  const { connection } = useConnection();
+  const wallet = useWallet();
+  const session = useSession();
+
+  const tokenPrice = useRecoilValue(TokenPriceAtom);
+
+  const [amount, setAmount] = useState("0");
+  const [cryptoEquivalent, setCryptoEquivalent] = useState(0);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [tipLinkCreated, setTipLinkCreated] = useState(false);
+
   const [selectedAsset, setSelectedAsset] = useState<Asset>({
     symbol: "SOL",
     name: "Solana",
@@ -53,83 +54,53 @@ export default function TipLinkForm() {
     balanceUsd: 0,
     icon: "/solana.png",
   });
+
   const [selectAccount, setSelectAccount] = useState<AssetAccount>({
-    name: "Solana",
+    name: "SolLink",
     icon: "/solana.png",
   });
-  
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+
+  const [accounts, setAccounts] = useState<AssetAccount[]>([]);
   const solPriceRef = useRef<number>(144);
-  const { connection } = useConnection();
-  const wallet = useWallet();
-  const [tipLinkCreated, setTipLinkCreated] = useState(false);
-  const assets: AssetAccount[] = [];
-  const [sonu, setSonu] = useState<AssetAccount[]>([]);
-useEffect(() => {
-  if (session.status == "authenticated") {
-    setSelectAccount({
-      name: "SolLink",
-      icon: "/solana.png",
-    });
-    setSonu((prev) => [
-      ...prev,
-      {
-        name: "SolLink",
-        icon: "/solana.png",
-      },
-    ]);
-  
-  }
-  if (wallet.publicKey) {
- setSonu((prev) => [
-   ...prev,
-   {
-     name: wallet.wallet?.adapter.name || "",
-     icon: wallet.wallet?.adapter.icon || "",
-   },
- ]);
 
-  
-  }
-  console.log(assets);
-}, [session.status, wallet.publicKey]);
+  // Update accounts based on wallet/session
+  useEffect(() => {
+    const updatedAccounts: AssetAccount[] = [];
 
-  const handleQuickAmountSelect = (value: number) => {
-    setAmount(value.toString());
-    
-    setCryptoEquivalent(value / solPriceRef.current);
-  };
+    if (session.status === "authenticated") {
+      updatedAccounts.push({ name: "SolLink", icon: "/solana.png" });
+    }
 
-  const handleCreateTipLink = async () => {
-    setIsCreating(true);
+    if (wallet.publicKey && wallet.wallet?.adapter.name) {
+      updatedAccounts.push({
+        name: wallet.wallet.adapter.name,
+        icon: wallet.wallet.adapter.icon ?? "",
+      });
+    }
+
+    setAccounts(updatedAccounts);
+    if (!wallet.publicKey) {
+      setSelectAccount({ name: "Connect Wallet", icon: "/null.png" });
+    }
+  }, [session.status, wallet.publicKey, wallet.wallet]);
+
+  useEffect(() => {
+    solPriceRef.current = tokenPrice || 0;
+    if (wallet.connected && wallet.publicKey) {
+      getBalance(wallet.publicKey);
+    }
+  }, [tokenPrice, wallet.publicKey]);
+
+  const getBalance = async (publicKey: PublicKey) => {
     try {
-      const key = Keypair.generate();
-      const publicKey = key.publicKey;
-      const privateKey = JSON.stringify(bs58.encode(key.secretKey));
-
-      const trx = new Transaction();
-      const details = SystemProgram.transfer({
-        fromPubkey: wallet.publicKey!,
-        toPubkey: publicKey,
-        lamports: Number(cryptoEquivalent.toFixed(3)) * LAMPORTS_PER_SOL,
-      });
-
-      trx.add(details);
-      const signature = await wallet.sendTransaction(trx, connection);
-      setSignature(privateKey);
-      setTipLinkCreated(true);
-
-      toast({
-        title: "Link Created!",
-        description: signature.toString(),
-      });
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Something went wrong!",
-      });
-    } finally {
-      setIsCreating(false);
+      const balance = await connection.getBalance(publicKey, "confirmed");
+      setSelectedAsset((prev) => ({
+        ...prev,
+        balance: balance / LAMPORTS_PER_SOL,
+        balanceUsd: (solPriceRef.current * balance) / LAMPORTS_PER_SOL,
+      }));
+    } catch (err) {
+      console.error("Error getting balance:", err);
     }
   };
 
@@ -137,61 +108,70 @@ useEffect(() => {
     const value = e.target.value;
     if (/^\d*\.?\d*$/.test(value)) {
       setAmount(value);
-      const numericValue = parseFloat(value);
-      if (!isNaN(numericValue) && solPriceRef.current > 0) {
-        setCryptoEquivalent(numericValue / solPriceRef.current);
-      } else {
-        setCryptoEquivalent(0);
-      }
+      const numeric = parseFloat(value);
+      setCryptoEquivalent(!isNaN(numeric) ? numeric / solPriceRef.current : 0);
     }
   };
 
-  const getBalance = async (publicKey: PublicKey) => {
-    const balance = await connection.getBalance(publicKey, "confirmed");
-    setSelectedAsset((prev) => ({
-      ...prev,
-      balance: balance / LAMPORTS_PER_SOL,
-      balanceUsd: (solPriceRef.current * balance) / LAMPORTS_PER_SOL,
-    }));
+  const handleQuickAmountSelect = (value: number) => {
+    setAmount(value.toString());
+    setCryptoEquivalent(value / solPriceRef.current);
   };
 
-  useEffect(() => {
-      solPriceRef.current = (tokenPrice||0);
- 
-      if (wallet.connected && wallet.publicKey) {
+  const handleCreateTipLink = async () => {
+    if (!wallet.publicKey) {
+      toast({ title: "Wallet not connected" });
+      return;
+    }
 
-        getBalance(wallet.publicKey);
-      }
-  }, [tokenPrice,connection, wallet.publicKey]);
+    setIsCreating(true);
+    try {
+      const key = Keypair.generate();
+      const trx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: wallet.publicKey,
+          toPubkey: key.publicKey,
+          lamports: Math.round(cryptoEquivalent * LAMPORTS_PER_SOL),
+        })
+      );
+
+      const txSig = await wallet.sendTransaction(trx, connection);
+      setSignature(bs58.encode(key.secretKey));
+      setTipLinkCreated(true);
+
+      toast({ title: "TipLink created", description: txSig });
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: "Transaction failed", description: err.message });
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <Card className="w-full overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm transition-all">
       <CreatedTipLinkModal
         open={tipLinkCreated}
         onClose={() => setTipLinkCreated(false)}
-        amount={String(cryptoEquivalent.toFixed(4).toString())}
+        amount={cryptoEquivalent.toFixed(4)}
         currency="SOL"
         usdValue={amount}
-        tipLinkUrl={signature || ""}
+        tipLinkUrl={signature ?? ""}
       />
 
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-3xl font-bold tracking-tight transition-colors">
-          Create a SolLink
-        </CardTitle>
-        <CardDescription className="text-md max-w-sm mx-auto text-muted-foreground">
-          Send crypto & NFTs to anyone, even if they don&apos;t have a wallet.
-          No app needed!
+      <CardHeader className="text-center space-y-1">
+        <CardTitle className="text-3xl font-bold">Create a SolLink</CardTitle>
+        <CardDescription>
+          Send crypto to anyone—even if they don't have a wallet. No app needed!
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <FundAccountSelect
-            assets={sonu}
-            selectedAsset={selectAccount}
-            onAssetChange={setSelectAccount}
-          />
-        </div>
+        <FundAccountSelect
+          assets={accounts}
+          selectedAsset={selectAccount}
+          onAssetChange={setSelectAccount}
+        />
         <div className="space-y-2">
           <AssetSelector
             selectedAsset={selectedAsset}
@@ -203,9 +183,9 @@ useEffect(() => {
           </p>
         </div>
 
-        <div className="relative mt-6">
-          <div className="flex items-center border rounded-md bg-background/50 hover:bg-background/80 transition-colors focus-within:ring-1 focus-within:ring-ring">
-            <span className="pl-3 text-lg font-medium text-foreground">$</span>
+        <div className="mt-6 relative">
+          <div className="flex items-center border rounded-md bg-background/50">
+            <span className="pl-3 text-lg font-medium">$</span>
             <Input
               type="text"
               value={amount}
@@ -236,6 +216,7 @@ useEffect(() => {
           ))}
         </div>
       </CardContent>
+
       <CardFooter className="flex flex-col">
         <Button
           className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white py-6 text-base font-medium"

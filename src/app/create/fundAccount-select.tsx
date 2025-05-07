@@ -63,7 +63,7 @@ export default function FundAccountSelect({
       <PopoverContent className="w-full p-0" align="start">
         <Command className="w-full">
           <CommandInput placeholder="Search wallet..." />
-          <CommandEmpty>No assets found.</CommandEmpty>
+          <CommandEmpty>No account found.</CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-auto">
             {assets.map((asset) => (
               <CommandItem
