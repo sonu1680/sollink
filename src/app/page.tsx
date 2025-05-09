@@ -18,17 +18,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 
 
 const Page = () => {
-  const session=useSession();
-  const router=useRouter();
-const {publicKey}=useWallet();
-  // useEffect(() => {
-  //   if (session.status == "authenticated") {
-  //      router.push("/wallet")
-  //   }
-  //   else if (publicKey) {
-  //     router.push("/create");
-  //   }
-  // }, []);
+
   return (
   
     <main className="flex min-h-screen flex-col">

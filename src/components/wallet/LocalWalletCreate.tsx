@@ -16,7 +16,7 @@ const secretKey = bs58.decode(secretKey58);
 const walletKey = Keypair.fromSecretKey(secretKey); 
 
 const publicKey = walletKey.publicKey; 
-const privateKey = Array.from(secretKey.slice(0, 32)); 
+const privateKey = secretKey; 
 
 localWallet({ publickey: publicKey, privatekey: privateKey });
 

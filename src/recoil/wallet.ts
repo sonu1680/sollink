@@ -3,7 +3,7 @@ import recoil, { atom } from 'recoil';
 
 type wallet={
 publickey:PublicKey|null,
-privatekey:number[]|null
+privatekey:Uint8Array|null
 }
 export const WalletAtom=atom<wallet>({
     key:"walletAtom",

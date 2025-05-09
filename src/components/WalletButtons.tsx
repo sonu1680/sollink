@@ -14,7 +14,6 @@ const WalletButtons = () => {
     <div>
       <WalletMultiButton />
       <LocalWalletCreate />
-      {/* <WalletDisconnectButton /> */}
     </div>
   );
 };

@@ -17,13 +17,13 @@ import { RefreshCw } from "lucide-react";
 import AssetSelector from "./asset-selector";
 import FundAccountSelect from "./fundAccount-select";
 import CreatedTipLinkModal from "@/components/linkmodal/created-tiplink-moda";
-import axios from "axios";
 import bs58 from "bs58";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
+  sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
@@ -32,6 +32,8 @@ import { TokenPriceAtom } from "@/recoil/tokenPrice";
 import { useSession } from "next-auth/react";
 import { WalletAtom } from "@/recoil/wallet";
 import { Asset, AssetAccount } from "@/lib/types";
+
+import { AlertDialogs } from "@/components/AlertDialogs";
 
 export default function TipLinkForm() {
   const { toast } = useToast();
@@ -62,14 +64,16 @@ export default function TipLinkForm() {
 
   const [accounts, setAccounts] = useState<AssetAccount[]>([]);
   const solPriceRef = useRef<number>(144);
-
+  const solLinkWallet = useRecoilValue(WalletAtom);
+const [solLinkTrxDialog,setSolLinkTrxDialog]=useState<boolean>(false)
+const [dialogHandlers, setDialogHandlers] = useState<{
+  onConfirm: () => void;
+  onClose: () => void;
+} | null>(null);
   // Update accounts based on wallet/session
   useEffect(() => {
     const updatedAccounts: AssetAccount[] = [];
-
-    if (session.status === "authenticated") {
-      updatedAccounts.push({ name: "SolLink", icon: "/solana.png" });
-    }
+    updatedAccounts.push({ name: "SolLink", icon: "/solana.png" });
 
     if (wallet.publicKey && wallet.wallet?.adapter.name) {
       updatedAccounts.push({
@@ -79,17 +83,33 @@ export default function TipLinkForm() {
     }
 
     setAccounts(updatedAccounts);
-    if (!wallet.publicKey) {
-      setSelectAccount({ name: "Connect Wallet", icon: "/null.png" });
+
+     if (session.status === "authenticated") {
+      setSelectAccount({ name: "SolLink", icon: "/solana.png" });
+
     }
-  }, [session.status, wallet.publicKey, wallet.wallet]);
+    else if (wallet.publicKey) {
+      setSelectAccount({
+        name: wallet.wallet?.adapter.name!,
+        icon: wallet.wallet?.adapter.icon! ?? "",
+      });
+    } else{
+      setSelectAccount({ name: "Connect Wallet", icon: "/null.png" });
+
+    }
+   
+  }, [session.status, wallet.publicKey,]);
 
   useEffect(() => {
     solPriceRef.current = tokenPrice || 0;
     if (wallet.connected && wallet.publicKey) {
-      getBalance(wallet.publicKey);
+       getBalance(wallet.publicKey);
     }
-  }, [tokenPrice, wallet.publicKey]);
+    else if (solLinkWallet.publickey) {
+      getBalance(solLinkWallet.publickey);
+    }
+
+  }, [ wallet.publicKey, selectAccount]);
 
   const getBalance = async (publicKey: PublicKey) => {
     try {
@@ -118,8 +138,36 @@ export default function TipLinkForm() {
     setCryptoEquivalent(value / solPriceRef.current);
   };
 
+
+//confirm sollink trx popup
+const confirmSolLinkTransaction = () => {
+  return new Promise<void>((resolve, reject) => {
+    const handleConfirm = () => {
+      setSolLinkTrxDialog(false);
+      resolve();
+    };
+
+    const handleClose = () => {
+      setSolLinkTrxDialog(false);
+      reject(new Error("User cancelled"));
+    };
+
+    setSolLinkTrxDialog(true);
+    setDialogHandlers({ onConfirm: handleConfirm, onClose: handleClose });
+  });
+};
+
+
+
   const handleCreateTipLink = async () => {
-    if (!wallet.publicKey) {
+    let txSig;;
+    let senderPublickey;;
+    if (selectAccount.name=="SolLink"){
+      senderPublickey = solLinkWallet.publickey;;
+    }else{
+      senderPublickey = wallet.publicKey;
+    }
+    if (!senderPublickey) {
       toast({ title: "Wallet not connected" });
       return;
     }
@@ -129,13 +177,27 @@ export default function TipLinkForm() {
       const key = Keypair.generate();
       const trx = new Transaction().add(
         SystemProgram.transfer({
-          fromPubkey: wallet.publicKey,
+          fromPubkey: senderPublickey,
           toPubkey: key.publicKey,
           lamports: Math.round(cryptoEquivalent * LAMPORTS_PER_SOL),
         })
       );
 
-      const txSig = await wallet.sendTransaction(trx, connection);
+      if (selectAccount.name == "SolLink") {
+        const sender = Keypair.fromSecretKey(solLinkWallet.privatekey!);
+
+        try {
+          await confirmSolLinkTransaction();
+          txSig = await sendAndConfirmTransaction(connection, trx, [sender]);
+        } catch (err) {
+          toast({ title: "Transaction cancelled" });
+          return;
+        }
+      } else {
+         txSig = await wallet.sendTransaction(trx, connection);
+
+      }
+
       setSignature(bs58.encode(key.secretKey));
       setTipLinkCreated(true);
 
@@ -150,6 +212,20 @@ export default function TipLinkForm() {
 
   return (
     <Card className="w-full overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm transition-all">
+      <AlertDialogs
+        open={solLinkTrxDialog}
+        title="Are you absolutely sure?"
+        description="This action cannot be undone. Are you sure you want to proceed?"
+        onClose={() => {
+          setSolLinkTrxDialog(false);
+          dialogHandlers?.onClose?.(); // reject promise if any
+        }}
+        onConfirm={() => {
+          setSolLinkTrxDialog(false);
+          dialogHandlers?.onConfirm?.(); // resolve promise if any
+        }}
+      />
+
       <CreatedTipLinkModal
         open={tipLinkCreated}
         onClose={() => setTipLinkCreated(false)}

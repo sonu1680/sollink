@@ -78,7 +78,7 @@ export default function ClaimOptions({
       const sender = Keypair.fromSecretKey(keypairBytes);
       if (balance < 5000) return toast({ title: "insufficient balance" });
       const receiver = wallet.publicKey;
-      console.log(receiver, sender);
+      // console.log(receiver, sender);
 
       const transaction = new Transaction().add(
         SystemProgram.transfer({
@@ -95,9 +95,8 @@ export default function ClaimOptions({
       );
       setIsSubmitting(false);
 
-      return toast({ title: "crypto clain success" });
+      return toast({ title: "crypto clain success",description:signature });
 
-      console.log("✅ Transaction signature:", signature);
     } catch (err) {
       console.error("❌ Transaction failed:", err);
     }
