@@ -98,7 +98,7 @@ const assets: Asset[] = [
                 </div>
                 <span>{asset.symbol}</span>
                 <span className="ml-auto text-xs text-muted-foreground">
-                  {asset.balance.toFixed(2)} (${asset.balanceUsd.toFixed(2)})
+                  {/* {asset.balance.toFixed(2)} (${asset.balanceUsd.toFixed(2)}) */}
                 </span>
                 {asset.symbol === selectedAsset.symbol && (
                   <Check className="ml-2 h-4 w-4 text-primary" />

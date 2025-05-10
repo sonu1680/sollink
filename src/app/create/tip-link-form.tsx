@@ -37,6 +37,7 @@ const {
   solLinkTrxDialog,
   dialogHandlers,
   setSolLinkTrxDialog,
+  walletBalance,
 } = useSolLinkForm();
 
   return (
@@ -83,8 +84,8 @@ const {
             onAssetChange={setSelectedAsset}
           />
           <p className="text-sm text-center text-muted-foreground">
-            Your available {selectedAsset.symbol}: {selectedAsset.balance} ($
-            {selectedAsset.balanceUsd.toFixed(3)})
+            Your available {selectedAsset.symbol}: {walletBalance.balance} ($
+            {walletBalance.balanceUsd.toFixed(3)})
           </p>
         </div>
 
@@ -94,7 +95,7 @@ const {
             <Input
               type="text"
               value={amount}
-              onChange={(e)=>handleAmountChange(e?.target.value)}
+              onChange={(e) => handleAmountChange(e?.target.value)}
               className="border-0 text-lg focus-visible:ring-0 pl-0"
               placeholder="0.00"
             />

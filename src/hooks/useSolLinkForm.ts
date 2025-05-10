@@ -58,54 +58,58 @@ const [walletBalance, setWalletBalance] = useState<{balance:number,balanceUsd:nu
   const [accounts, setAccounts] = useState<AssetAccount[]>([]);
 
   useEffect(() => {
-    const updatedAccounts: AssetAccount[] = [
-      { name: "SolLink", icon: "/solana.png" },
-    ];
+    solPriceRef.current = tokenPrice || 0;
 
-    if (wallet.publicKey && wallet.wallet?.adapter.name) {
+    const updatedAccounts: AssetAccount[] = [];
+
+    const isWalletConnected = wallet.publicKey && wallet.wallet?.adapter?.name;
+    const isUserAuthenticated = session.status === "authenticated";
+
+    // Populate available accounts
+    if (isWalletConnected) {
       updatedAccounts.push({
-        name: wallet.wallet.adapter.name,
-        icon: wallet.wallet.adapter.icon ?? "",
+        name: wallet.wallet?.adapter.name!,
+        icon: wallet.wallet?.adapter.icon || "/null.png",
+      });
+    }
+
+    if (isUserAuthenticated) {
+      updatedAccounts.push({
+        name: "SolLink",
+        icon: "/solana.png",
+      });
+    }
+
+    if (updatedAccounts.length === 0) {
+      updatedAccounts.push({
+        name: "Connect Wallet",
+        icon: "/null.png",
       });
     }
 
     setAccounts(updatedAccounts);
 
-    if (session.status === "authenticated") {
+    // Determine default selected account
+    if (isUserAuthenticated) {
       setSelectAccount({ name: "SolLink", icon: "/solana.png" });
-    } else if (wallet.publicKey) {
+    } else if (isWalletConnected) {
       setSelectAccount({
         name: wallet.wallet?.adapter.name!,
-        icon: wallet.wallet?.adapter.icon! ?? "",
+        icon: wallet.wallet?.adapter.icon! || "/null.png",
       });
     } else {
       setSelectAccount({ name: "Connect Wallet", icon: "/null.png" });
     }
-  }, [session.status, wallet.publicKey]);
+  }, [
+    session.status,
+    wallet.publicKey,
+    wallet.wallet?.adapter?.name,
+    tokenPrice,
+  ]);
+  
 
   useEffect(() => {
-    solPriceRef.current = tokenPrice || 0;
-    if (wallet.connected && wallet.publicKey) {
-      getBalance(wallet.publicKey);
-    } else if (solLinkWallet.publickey) {
-      getBalance(solLinkWallet.publickey);
-    }
-  }, [wallet.publicKey, selectAccount]);
-
-  const getBalance = async (publicKey: PublicKey) => {
-    try {
-      const balance = await connection.getBalance(publicKey, "confirmed");
-      setSelectedAsset((prev) => ({
-        ...prev,
-        balance: balance / LAMPORTS_PER_SOL,
-        balanceUsd: (solPriceRef.current * balance) / LAMPORTS_PER_SOL,
-      }));
-    } catch (err) {
-      console.error("Error getting balance:", err);
-    }
-  };
-  useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchBalance = async (publicKey:PublicKey) => {
       try {
         const balance = await connection.getBalance(publicKey, "confirmed");
         setWalletBalance({
@@ -117,10 +121,23 @@ const [walletBalance, setWalletBalance] = useState<{balance:number,balanceUsd:nu
       }
     };
 
-    if (publicKey) {
-      fetchBalance();
+  
+    if(selectAccount.name=="SolLink"){
+const publicKey = solLinkWallet.publickey;
+if(publicKey){
+  fetchBalance(publicKey!);
+}else{
+  toast({
+    title:"Something went wrong!!",
+    description:"Please try again later!"
+  })
+}
     }
-  }, [connection, publicKey]);
+    else{
+      const publicKey=wallet.publicKey;
+      fetchBalance(publicKey!);
+    }
+  }, [selectAccount.name]);
   
   const handleAmountChange = (value: string) => {
     if (/^\d*\.?\d*$/.test(value)) {
@@ -221,5 +238,6 @@ const [walletBalance, setWalletBalance] = useState<{balance:number,balanceUsd:nu
     solLinkTrxDialog,
     dialogHandlers,
     setSolLinkTrxDialog,
+    walletBalance,
   };
 }
