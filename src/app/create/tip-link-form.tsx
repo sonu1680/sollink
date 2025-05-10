@@ -32,6 +32,7 @@ const {
   handleCreateTipLink,
   isCreating,
   tipLinkCreated,
+  claimBackPublicKey,
   setTipLinkCreated,
   signature,
   solLinkTrxDialog,
@@ -46,23 +47,26 @@ const {
         open={solLinkTrxDialog}
         title="Are you absolutely sure?"
         description="This action cannot be undone. Are you sure you want to proceed?"
+        balance={cryptoEquivalent.toFixed(4)}
+        balanceUsd={amount}
         onClose={() => {
           setSolLinkTrxDialog(false);
-          dialogHandlers?.onClose?.(); // reject promise if any
+          dialogHandlers?.onClose?.();
         }}
         onConfirm={() => {
           setSolLinkTrxDialog(false);
-          dialogHandlers?.onConfirm?.(); // resolve promise if any
+          dialogHandlers?.onConfirm?.();
         }}
       />
 
       <CreatedTipLinkModal
         open={tipLinkCreated}
         onClose={() => setTipLinkCreated(false)}
-        amount={cryptoEquivalent.toFixed(4)}
+        amount={cryptoEquivalent}
         currency="SOL"
         usdValue={amount}
-        tipLinkUrl={signature ?? ""}
+        solLinkUrl={`${process.env.NEXT_PUBLIC_CLAIM_URL}/${signature}`}
+        claimBackPublicKey={claimBackPublicKey!}
       />
 
       <CardHeader className="text-center space-y-1">
@@ -139,14 +143,7 @@ const {
           )}
         </Button>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Lost your link?{" "}
-            <a href="#" className="text-blue-500 hover:underline">
-              Click Here
-            </a>
-          </p>
-        </div>
+       
       </CardFooter>
     </Card>
   );

@@ -10,17 +10,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import QRCode from "@/components/ui/qrcode";
-import { CheckIcon, Copy, Share2 } from "lucide-react";
-import Image from "next/image";
+import { CheckIcon, Copy, RefreshCw, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import bs58 from "bs58"
+import { toast } from "@/hooks/use-toast";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { useRouter } from "next/navigation";
 interface CreatedTipLinkModalProps {
   open: boolean;
   onClose: () => void;
-  amount: string;
+  amount: number;
   currency: string;
   usdValue: string;
-  tipLinkUrl: string;
+  solLinkUrl: string;
+  claimBackPublicKey?: PublicKey;
 }
 
 export default function CreatedTipLinkModal({
@@ -29,13 +33,18 @@ export default function CreatedTipLinkModal({
   amount,
   currency,
   usdValue,
-  tipLinkUrl,
+  solLinkUrl,
+  claimBackPublicKey,
+
 }: CreatedTipLinkModalProps) {
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const[loading,setLoading]=useState<boolean>(false)
+const {connection}=useConnection();
+const router=useRouter()
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(tipLinkUrl);
+    navigator.clipboard.writeText(solLinkUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -44,9 +53,11 @@ export default function CreatedTipLinkModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `TipLink for ${amount} ${currency}`,
-          text: `I'm sending you ${amount} ${currency} (~$${usdValue}) via TipLink!`,
-          url: tipLinkUrl,
+          title: `TipLink for ${amount.toFixed(4)} ${currency}`,
+          text: `I'm sending you ${amount.toFixed(
+            4
+          )} ${currency} (~$${usdValue}) via TipLink!`,
+          url: solLinkUrl,
         });
       } catch (err) {
         console.error("Error sharing:", err);
@@ -54,6 +65,41 @@ export default function CreatedTipLinkModal({
     } else {
       copyToClipboard();
     }
+  };
+
+  const claimBack = async() => {
+    try {
+      setLoading(true);
+      const keypairBytes = bs58.decode(solLinkUrl.toString());
+      const sender = Keypair.fromSecretKey(keypairBytes);
+      const bal = await connection.getBalance(sender.publicKey, "confirmed");
+
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: sender.publicKey,
+          toPubkey: claimBackPublicKey!,
+          lamports: bal - 5000,
+        })
+      );
+      const signature = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [sender]
+      );
+      //router.push("/create");
+      setLoading(false);
+      onClose();
+      return toast({
+        title: "crypto claim back success",
+        description: signature,
+      });
+    } catch (err) {
+        console.error("❌ Transaction failed:", err);
+        setLoading(false);
+        onClose();
+
+      }
+    
   };
 
   return (
@@ -81,7 +127,9 @@ export default function CreatedTipLinkModal({
 
               <div className="space-y-1">
                 <div className="flex items-baseline">
-                  <span className="text-4xl font-bold">{amount}</span>
+                  <span className="text-4xl font-bold">
+                    {amount.toFixed(4)}
+                  </span>
                   <span className="ml-2 text-2xl text-muted-foreground">
                     {currency}
                   </span>
@@ -93,7 +141,7 @@ export default function CreatedTipLinkModal({
             </div>
 
             <div className="flex gap-2">
-              <Input value={tipLinkUrl} readOnly className="bg-muted/50" />
+              <Input value={solLinkUrl} readOnly className="bg-muted/50" />
               <Button
                 variant="outline"
                 size="icon"
@@ -128,8 +176,15 @@ export default function CreatedTipLinkModal({
               </Button>
             </div>
 
-            <Button variant="secondary" className="w-full">
-              Claim Back
+            <Button variant="secondary" className="w-full" onClick={claimBack}>
+              {loading ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Claiming back...
+                </>
+              ) : (
+                "Claim back"
+              )}{" "}
             </Button>
           </div>
         ) : (
@@ -139,12 +194,12 @@ export default function CreatedTipLinkModal({
             </p>
 
             <div className="bg-muted/30 p-4 rounded-lg">
-              <QRCode value={tipLinkUrl} className="max-w-[240px] mx-auto" />
+              <QRCode value={solLinkUrl} className="max-w-[240px] mx-auto" />
             </div>
 
             <div className="flex gap-2 items-center bg-muted/50 p-2 rounded-md">
               <Input
-                value={tipLinkUrl}
+                value={solLinkUrl}
                 readOnly
                 className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />

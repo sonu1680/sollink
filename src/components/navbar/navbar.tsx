@@ -39,21 +39,27 @@ const session=useSession()
           : "h-20 bg-transparent"
       )}
     >
-      <div className="container mx-auto h-full px-4 md:px-6 flex items-center justify-between">
+      <div className="container mx-auto h-full px-4 md:px-6 flex  items-center justify-between">
         <Link
           href="/"
-          className="font-semibold text-xl transition-colors hover:text-primary"
+          className="font-semibold text-xl flex flex-row gap-x-2 transition-colors hover:text-primary"
         >
-          SolLink
+          <Image src={"/solana.png"} alt="logo" height={30} width={30} />
+          <span>SolLink</span>
         </Link>
 
         <div className="flex items-center gap-2">
-          <Switch
-            checked={theme === "dark"}
-            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-          />
+          <div className="md:flex flex-row items-center justify-center gap-x-6 hidden ">
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={(checked) =>
+                setTheme(checked ? "dark" : "light")
+              }
+            />
 
-          <WalletButton />
+            <WalletButton />
+          </div>
+
           {session.status == "authenticated" ? (
             <div className="flex flex-row gap-2 justify-between items-center bg-secondary px-2 rounded-sm ">
               <Image

@@ -10,16 +10,31 @@ import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import WalletButtons from "../WalletButtons";
+import { Switch } from "../ui/switch";
+import { useTheme } from "next-themes";
+import ReceivePaymentQr from "../ReceivePaymentQr";
+import { useRecoilValue } from "recoil";
+import { WalletAtom } from "@/recoil/wallet";
 
 export default function MobileMenu() {
+    const { setTheme, theme } = useTheme();
+  
   const [isOpen, setIsOpen] = useState(false);
   const session = useSession();
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+const{publickey}=useRecoilValue(WalletAtom);
+  const [showQR, setShowQR] = useState(false);
 
   return (
     <div className="w-full">
+      <ReceivePaymentQr
+        link={publickey?.toBase58()! || ""}
+        open={showQR}
+        onClose={() => setShowQR(false)}
+      />
+
       <Button
         variant="ghost"
         size="icon"
@@ -89,18 +104,22 @@ export default function MobileMenu() {
                   </div>
 
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon"
                     className="h-8 w-8"
                     aria-label="Settings"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  ></Button>
+                  <Switch
+                    checked={theme === "dark"}
+                    onCheckedChange={(checked) =>
+                      setTheme(checked ? "dark" : "light")
+                    }
+                  />
                 </div>
               </div>
             )}
-            <div className="container flex flex-row justify-evenly items-center">
-              <Button>
+            <div className="container flex flex-row justify-evenly items-center text-primary ">
+              <Button onClick={() => setShowQR(true)}>
                 <Wallet />
                 wallet address
               </Button>
@@ -112,8 +131,6 @@ export default function MobileMenu() {
             <div className="walletid w-full p-2 flex justify-center items-center mt-2 ">
               <WalletButtons></WalletButtons>
             </div>
-
-            {/* <NavLinks mobile onClick={() => setIsOpen(false)} /> */}
           </div>
 
           <div className="py-4">

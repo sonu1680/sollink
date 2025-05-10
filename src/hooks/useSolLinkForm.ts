@@ -34,14 +34,19 @@ export function useSolLinkForm() {
   const [isCreating, setIsCreating] = useState(false);
   const [tipLinkCreated, setTipLinkCreated] = useState(false);
   const [solLinkTrxDialog, setSolLinkTrxDialog] = useState<boolean>(false);
+  const [claimBackPublicKey, setClaimBackPublickey] =
+    useState<PublicKey | null>(null);
   const [dialogHandlers, setDialogHandlers] = useState<{
     onConfirm: () => void;
     onClose: () => void;
   } | null>(null);
-const [walletBalance, setWalletBalance] = useState<{balance:number,balanceUsd:number}>({
-  balance:0,
-  balanceUsd:0
-});
+  const [walletBalance, setWalletBalance] = useState<{
+    balance: number;
+    balanceUsd: number;
+  }>({
+    balance: 0,
+    balanceUsd: 0,
+  });
   const [selectedAsset, setSelectedAsset] = useState<Asset>({
     symbol: "SOL",
     name: "Solana",
@@ -106,39 +111,35 @@ const [walletBalance, setWalletBalance] = useState<{balance:number,balanceUsd:nu
     wallet.wallet?.adapter?.name,
     tokenPrice,
   ]);
-  
-
   useEffect(() => {
-    const fetchBalance = async (publicKey:PublicKey) => {
+    const fetchBalance = async (publicKey: PublicKey) => {
       try {
-        const balance = await connection.getBalance(publicKey, "confirmed");
+        const lamports = await connection.getBalance(publicKey, "confirmed");
+        const sol = lamports / LAMPORTS_PER_SOL;
         setWalletBalance({
-          balance: balance / LAMPORTS_PER_SOL,
-          balanceUsd: (solPriceRef.current * balance) / LAMPORTS_PER_SOL,
+          balance: sol,
+          balanceUsd: sol * solPriceRef.current,
         });
       } catch (error) {
-        console.error("Failed to fetch balance:", error);
+        toast({
+          title: "Failed to fetch balance",
+          description: "Please check your network connection.",
+        });
       }
     };
 
-  
-    if(selectAccount.name=="SolLink"){
-const publicKey = solLinkWallet.publickey;
-if(publicKey){
-  fetchBalance(publicKey!);
-}else{
-  toast({
-    title:"Something went wrong!!",
-    description:"Please try again later!"
-  })
-}
+    const publicKey =
+      selectAccount.name === "SolLink"
+        ? solLinkWallet?.publickey
+        : wallet?.publicKey;
+
+    if (publicKey) {
+      fetchBalance(publicKey);
+    
     }
-    else{
-      const publicKey=wallet.publicKey;
-      fetchBalance(publicKey!);
-    }
-  }, [selectAccount.name]);
+  }, [selectAccount.name, solLinkWallet?.publickey, wallet?.publicKey]);
   
+
   const handleAmountChange = (value: string) => {
     if (/^\d*\.?\d*$/.test(value)) {
       setAmount(value);
@@ -183,7 +184,7 @@ if(publicKey){
       toast({ title: "Wallet not connected" });
       return;
     }
-
+    setClaimBackPublickey(senderPublickey);
     setIsCreating(true);
     try {
       const key = Keypair.generate();
@@ -239,5 +240,6 @@ if(publicKey){
     dialogHandlers,
     setSolLinkTrxDialog,
     walletBalance,
+    claimBackPublicKey,
   };
 }

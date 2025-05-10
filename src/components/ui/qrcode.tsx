@@ -18,6 +18,7 @@ export default function QRCode({ value, size = 256, className }: QRCodeProps) {
         const QRCodeStyling = (await import("qr-code-styling")).default;
 
         const qrCode = new QRCodeStyling({
+          
           width: size,
           height: size,
           type: "svg",

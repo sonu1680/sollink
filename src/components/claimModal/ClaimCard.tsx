@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, MoreHorizontal, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -12,21 +12,49 @@ import { motion } from "motion/react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRecoilValue } from "recoil";
 import { TokenPriceAtom } from "@/recoil/tokenPrice";
+import Image from "next/image";
+import AlreadyClaimed from "./AlreadyClaimed";
 
 interface ClaimCardProps {
   onClaim: () => void;
-  balance:number
+  balance: number;
 }
 
-export default function ClaimCard({ onClaim ,balance}: ClaimCardProps) {
+export default function ClaimCard({ onClaim, balance }: ClaimCardProps) {
   const [isHovering, setIsHovering] = useState(false);
-const tokenPrice=useRecoilValue(TokenPriceAtom);
+  const tokenPrice = useRecoilValue(TokenPriceAtom);
+
+  const solBalance = useMemo(() => balance / LAMPORTS_PER_SOL, [balance]);
+  const usdBalance = useMemo(
+    () => solBalance * (tokenPrice || 0),
+    [solBalance, tokenPrice]
+  );
+
+
+  if (usdBalance <= 0.2) {
+    return <AlreadyClaimed />;
+  }
+
+
+  if (tokenPrice === null || tokenPrice === undefined) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500 font-medium">
+        <RefreshCw className="animate-spin mb-2 h-6 w-6 text-gray-400" />
+        <span>Loading price data...</span>
+      </div>
+    );
+
+    
+    
+  }
 
 
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-bold text-center text-gray-900 mb-2">
-        Here is <span className="text-indigo-600">${((Number(balance) / LAMPORTS_PER_SOL)*tokenPrice!).toFixed(0)}</span> in crypto!
+      <h1 className="text-4xl font-bold text-center text-primary mb-2">
+        Here is{" "}
+        <span className="text-indigo-600">${usdBalance.toFixed(0)||""}</span> in
+        crypto!
       </h1>
       <p className="text-center text-gray-600 mb-6">
         Claim your free Solana tokens below
@@ -37,25 +65,28 @@ const tokenPrice=useRecoilValue(TokenPriceAtom);
 
         <CardHeader className="relative z-10 pb-0">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 p-1">
-              <div className="bg-white h-5 w-5 rounded-full flex items-center justify-center">
-                <div className="bg-teal-400 h-3 w-3 rounded-full"></div>
-              </div>
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r p-1">
+              <Image
+                src="/solana.png"
+                alt="Solana logo"
+                height={32}
+                width={32}
+              />
             </div>
             <span className="text-gray-600 font-medium">Solana Balance</span>
-
             <div className="ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    aria-label="Options"
+                  >
                     <MoreHorizontal className="h-5 w-5 text-gray-500" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>View Details</DropdownMenuItem>
-                  <DropdownMenuItem>Share</DropdownMenuItem>
-                  <DropdownMenuItem>Report Issue</DropdownMenuItem>
-                </DropdownMenuContent>
+              
               </DropdownMenu>
             </div>
           </div>
@@ -63,17 +94,17 @@ const tokenPrice=useRecoilValue(TokenPriceAtom);
 
         <CardContent className="relative z-10 pt-4">
           <div className="mb-1 flex items-baseline">
-            <span className="text-6xl font-bold text-gray-900 tracking-tight">
-              {Number(balance) / LAMPORTS_PER_SOL}
+            <span className="text-6xl font-bold text-primary tracking-tight">
+              {solBalance.toFixed(4)}
             </span>
             <span className="text-4xl text-gray-500 ml-2 font-medium">SOL</span>
           </div>
 
           <div className="flex items-center mb-6">
-            <div className="flex gap-1 items-center text-gray-600">
+            <div className="flex gap-1 items-center text-primary">
               ≈{" "}
               <span className="font-medium">
-                ${((Number(balance) / LAMPORTS_PER_SOL)*tokenPrice!).toFixed(2)} price
+                ${usdBalance.toFixed(2)} price
               </span>{" "}
               USD
             </div>
@@ -96,6 +127,7 @@ const tokenPrice=useRecoilValue(TokenPriceAtom);
             <Button
               className="w-full py-6 text-lg font-medium bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl transition-all duration-300"
               onClick={onClaim}
+              aria-label="Claim Solana"
             >
               <span>Claim Now</span>
               <motion.div
@@ -111,4 +143,3 @@ const tokenPrice=useRecoilValue(TokenPriceAtom);
     </div>
   );
 }
-

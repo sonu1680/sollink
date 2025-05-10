@@ -1,18 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Balance from "@/components/wallet/balance";
-import TokenContainer from "@/components/token/TokenContainer";
-import ReceivePaymentQr from "@/components/ReceivePaymentQr";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import React from "react";
+
 import { Hero } from "@/components/home/hero";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { SignIn } from "@/components/home/sign-in";
 import { TrustSection } from "@/components/home/trust-section";
 import { Footer } from "@/components/home/footer";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useWallet } from "@solana/wallet-adapter-react";
 
 
 

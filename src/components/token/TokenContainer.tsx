@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from 'react'
 import NFT from './NFT';
 import NoToken from './NoToken';
@@ -9,7 +10,7 @@ const data = [{ title: "tokens" }, { title: "NFT" }  ,  {title:'activity'}
 const TokenContainer = () => {
     const [activeIndex, setActiveIndex] =useState(0);
   return (
-    <div className="w-full min-w-[300px] md:p-8 bg-gray-900/30 rounded-sm p-2 ">
+    <div className="w-full min-w-[300px] md:p-8 bg-primary-foreground rounded-sm p-2 ">
       <div className="navigation flex flex-row gap-x-4  ">
         {data.map((item, index) => (
           <div

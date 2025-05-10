@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { CheckIcon, Copy } from 'lucide-react';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
 type props = {
   link:string,
@@ -23,13 +23,18 @@ const ReceivePaymentQr = ({ link, open, onClose }:props) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
-        <div className="space-y-6">
-          <p className="text-center text-muted-foreground">
+       
+        <DialogHeader>
+          <DialogTitle>Receive Payment</DialogTitle>
+          <DialogDescription>
             Scan below to to receive payment!
-          </p>
+          </DialogDescription>
+        </DialogHeader>
+
+   
 
           <div className="bg-muted/30 p-4 rounded-lg">
-            <QRCode value={link} className="max-w-[240px] mx-auto" />
+            <QRCode  value={link} className="max-w-[240px] mx-auto" />
           </div>
 
           <div className="flex gap-2 items-center bg-muted/50 p-2 rounded-md">
@@ -58,7 +63,6 @@ const ReceivePaymentQr = ({ link, open, onClose }:props) => {
           <Button onClick={onClose} className="w-full">
             Done
           </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

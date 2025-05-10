@@ -19,8 +19,8 @@ const Balance = () => {
 const tokenPrice=useRecoilValue(TokenPriceAtom)
 
 const session=useSession();
-const solTousd=()=>{
-   connection.getBalance(new PublicKey(publickey!)).then((bal) => {
+const solTousd=async()=>{
+    connection.getBalance(new PublicKey(publickey!)).then((bal) => {
      const sol = bal / LAMPORTS_PER_SOL;
      setSol(sol);
      setBalance(sol * tokenPrice!);
@@ -31,7 +31,7 @@ useEffect(() => {
 }, [tokenPrice,session.status, publickey]);
 
   return (
-    <div className="w-full min-w-[300px] md:p-8 bg-gray-900/30 rounded-sm space-y-5  p-2 ">
+    <div className="w-full min-w-[300px] md:p-8 bg-primary-foreground rounded-sm space-y-5  p-2 ">
       <ReceivePaymentQr
         link={publickey?.toBase58()! || ""}
         open={showQR}
