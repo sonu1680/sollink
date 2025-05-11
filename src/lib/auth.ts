@@ -12,6 +12,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.NEXT_GOOGLE_CLIENT_ID_SECRET || "",
     }),
   ],
+
+
   session: {
     strategy: "jwt",
   },

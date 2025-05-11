@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ReceivePaymentQr from "../ReceivePaymentQr";
 import { useRecoilValue } from "recoil";
 import { WalletAtom } from "@/recoil/wallet";
+import Dialogs from "@/app/wallet/Dialogs";
 
 const options = [
   { title: "send/pay", icon: "Send", link: "" },
@@ -16,6 +17,7 @@ const Method = () => {
   const {publickey}=useRecoilValue(WalletAtom);
   const router = useRouter();
   const [showQR, setShowQR] = useState(false);
+  const [showDialog, setShowDialog] = useState<boolean>(false);
 const link = publickey?.toBase58();
   const handleClick = (option: (typeof options)[number]) => {
     if (option.title.toLowerCase() === "receiver") {
@@ -23,12 +25,16 @@ const link = publickey?.toBase58();
     } else if (option.link) {
       router.push(option.link);
     }
-  };
 
+    if(option.title=="send/pay"){
+      setShowDialog(true);
+  };
+  }
   return (
     <div className="flex flex-row gap-4 w-full">
+      <Dialogs onClose={()=>setShowDialog(false)} open={showDialog} />
       <ReceivePaymentQr
-        link={link||""}
+        link={link || ""}
         open={showQR}
         onClose={() => setShowQR(false)}
       />
