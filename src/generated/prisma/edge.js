@@ -131,7 +131,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\wallet-web3\\src\\generated\\prisma",
+      "value": "D:\\projects\\wallet-web3\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -145,7 +145,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\wallet-web3\\prisma\\schema.prisma",
+    "sourceFilePath": "D:\\projects\\wallet-web3\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
