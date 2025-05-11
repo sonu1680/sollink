@@ -178,14 +178,7 @@ export default function CreateTipLinkModal({
         </DialogContent>
       </Dialog>
 
-      <CreatedTipLinkModal
-        open={tipLinkCreated}
-        onClose={() => setTipLinkCreated(false)}
-        amount={1}
-        currency="SOL"
-        usdValue="0.15"
-        tipLinkUrl="https://tiplink.io/i#N1HKV1tLrD9JdRSn"
-      />
+   
     </>
   );
 }

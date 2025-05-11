@@ -9,12 +9,12 @@ export default function AlreadyClaimed() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 px-4">
-      <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+    <div className="flex flex-col items-center justify-center min-h-screen  px-4">
+      <div className="text-center bg-secondary p-8 rounded-lg shadow-md max-w-md w-full">
         <div className="bg-blue-50 p-6 rounded-full inline-flex items-center justify-center mb-6 mx-auto">
           <Mail className="h-10 w-10 text-blue-500" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">
+        <h1 className="text-3xl font-bold text-primary mb-3">
           SolLink Already Claimed
         </h1>
         <p className="text-gray-600 mb-8">
