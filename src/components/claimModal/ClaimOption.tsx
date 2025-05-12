@@ -21,6 +21,7 @@ import { useRecoilValue } from "recoil";
 import { WalletAtom } from "@/recoil/wallet";
 import { toast } from "@/hooks/use-toast";
 import WalletButtons from "../WalletButtons";
+import { useRouter } from "next/navigation";
 
 interface ClaimOptionsProps {
   onBack: () => void;
@@ -40,7 +41,7 @@ export default function ClaimOptions({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const wallet = useWallet();
   const { connection } = useConnection();
-
+const router=useRouter();
   const sendTransaction = useCallback(
     async (receiverAddress: PublicKey) => {
       try {
@@ -66,6 +67,7 @@ export default function ClaimOptions({
           [sender]
         );
         toast({ title: "Crypto claim success", description: signature });
+        router.push("/wallet");
       } catch (err) {
         console.error("❌ Transaction failed:", err);
         toast({ title: "Transaction failed", description: `${err}` });
