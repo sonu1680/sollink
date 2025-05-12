@@ -149,7 +149,7 @@ export default function CreateTipLinkModal({
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Create TipLink
+                  Create SolLink
                   <ArrowRightIcon className="ml-2 h-4 w-4" />
                 </Button>
               </form>
@@ -160,7 +160,7 @@ export default function CreateTipLinkModal({
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-4" />
               <p className="text-muted-foreground text-center">
-                Creating your TipLink...
+                Creating your SolLink...
               </p>
             </div>
           )}
@@ -171,7 +171,7 @@ export default function CreateTipLinkModal({
                 <CheckIcon className="h-6 w-6 text-green-600" />
               </div>
               <p className="text-center font-medium">
-                TipLink created successfully!
+                SolLink created successfully!
               </p>
             </div>
           )}

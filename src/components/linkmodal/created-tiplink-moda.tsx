@@ -53,10 +53,10 @@ const router=useRouter()
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `TipLink for ${amount.toFixed(4)} ${currency}`,
+          title: `SolLink for ${amount.toFixed(4)} ${currency}`,
           text: `I'm sending you ${amount.toFixed(
             4
-          )} ${currency} (~$${usdValue}) via TipLink!`,
+          )} ${currency} (~$${usdValue}) via SolLink!`,
           url: solLinkUrl,
         });
       } catch (err) {
@@ -107,7 +107,7 @@ const router=useRouter()
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
-            {showQR ? "TipLink URL's QR Code" : "You've created a TipLink!"}
+            {showQR ? "SolLink URL's QR Code" : "You've created a SolLink!"}
           </DialogTitle>
         </DialogHeader>
 
@@ -190,7 +190,7 @@ const router=useRouter()
         ) : (
           <div className="space-y-6">
             <p className="text-center text-muted-foreground">
-              Scan below to open directly to this specific TipLink:
+              Scan below to open directly to this specific SolLink:
             </p>
 
             <div className="bg-muted/30 p-4 rounded-lg">

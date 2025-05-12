@@ -136,10 +136,10 @@ const {
           {isCreating ? (
             <>
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Creating TipLink...
+              Creating SolLink...
             </>
           ) : (
-            "Create TipLink"
+            "Create SolLink"
           )}
         </Button>
 
