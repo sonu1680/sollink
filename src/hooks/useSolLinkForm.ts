@@ -211,7 +211,7 @@ export function useSolLinkForm() {
 
       setSignature(bs58.encode(key.secretKey));
       setTipLinkCreated(true);
-      toast({ title: "TipLink created", description: txSig });
+      toast({ title: "SolLink created", description: txSig });
     } catch (err: any) {
       console.error(err);
       toast({ title: "Transaction failed", description: err.message });

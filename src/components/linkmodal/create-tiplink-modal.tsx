@@ -86,7 +86,7 @@ export default function CreateTipLinkModal({
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create a TipLink</DialogTitle>
+            <DialogTitle>Create a SolLink</DialogTitle>
             <DialogDescription>
               Set an amount to share via a secure link
             </DialogDescription>
