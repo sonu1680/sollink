@@ -1,9 +1,8 @@
-import { PrismaClient } from "@/generated/prisma";
 import { Keypair } from "@solana/web3.js";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import bs58 from 'bs58'
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [

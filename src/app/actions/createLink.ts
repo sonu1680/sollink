@@ -1,10 +1,8 @@
 "use server";
 
-import { PrismaClient } from "@/generated/prisma";
 import { AES, enc } from "crypto-js";
 import { generate } from "generate-password";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma"
 const SECRET_KEY = process.env.ENCRYPT_KEY;
 
 export const generateLink = async (data: any) => {
