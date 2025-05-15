@@ -44,6 +44,8 @@ export default function CreatedTipLinkModal({
 const {connection}=useConnection();
 
   const copyToClipboard = () => {
+    console.log("solLinkUrl:", solLinkUrl);
+
     navigator.clipboard.writeText(solLinkUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -57,7 +59,7 @@ const {connection}=useConnection();
           text: `I'm sending you ${amount.toFixed(
             4
           )} ${currency} (~$${usdValue}) via SolLink!`,
-          url: solLinkUrl,
+          url: solLinkUrl.toString(),
         });
       } catch (err) {
         console.error("Error sharing:", err);
@@ -90,7 +92,7 @@ const {connection}=useConnection();
       onClose();
       return toast({
         title: "crypto claim back success",
-        description: signature,
+        description: solLinkUrl.toString(),
       });
     } catch (err) {
         console.error("❌ Transaction failed:", err);
@@ -140,7 +142,11 @@ const {connection}=useConnection();
             </div>
 
             <div className="flex gap-2">
-              <Input value={solLinkUrl} readOnly className="bg-muted/50" />
+              <Input
+                value={solLinkUrl.toString()}
+                readOnly
+                className="bg-muted/50"
+              />
               <Button
                 variant="outline"
                 size="icon"
