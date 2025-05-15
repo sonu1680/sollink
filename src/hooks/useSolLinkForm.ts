@@ -212,7 +212,6 @@ export function useSolLinkForm() {
 ////implemt logic to store secret key in db with enscryption
 
  const res = await generateLink(JSON.stringify(bs58.encode(key.secretKey)));
- console.log(res,"sonu")
  //@ts-ignore
  setSignature(res.data);
 

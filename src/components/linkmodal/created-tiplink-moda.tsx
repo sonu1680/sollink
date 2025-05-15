@@ -44,7 +44,6 @@ export default function CreatedTipLinkModal({
 const {connection}=useConnection();
 
   const copyToClipboard = () => {
-    console.log("solLinkUrl:", solLinkUrl);
 
     navigator.clipboard.writeText(solLinkUrl);
     setCopied(true);
