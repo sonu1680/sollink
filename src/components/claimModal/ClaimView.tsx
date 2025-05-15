@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState } from "react";
 import ClaimCard from "./ClaimCard";
 import ClaimOptions from "./ClaimOption";
@@ -6,7 +7,10 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { getLink } from "@/app/actions/createLink";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 export default function ClaimView({params}:{params:string}) {
+  const router=useRouter()
   const [step, setStep] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const[balance,setBalance]=useState<any>();
@@ -25,8 +29,12 @@ const [link,setLink]=useState(null)
 useEffect(()=>{
    ( async()=> {
      setIsAnimating(true);
-     const res = await getLink(params);
-
+     if (params.length < 10) {
+       toast({
+         title: "Invalid Claim Id!",
+        });
+        return router.replace("/");}
+        const res = await getLink(params);
      //@ts-ignore
      setLink(res.data);
      //@ts-ignore
@@ -35,6 +43,7 @@ useEffect(()=>{
      const sender = Keypair.fromSecretKey(keypairBytes);
      const bal = await connection.getBalance(sender.publicKey);
      setBalance(bal);
+     
      setIsAnimating(false);
    })() ;;
 },[])
