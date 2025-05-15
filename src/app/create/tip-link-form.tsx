@@ -41,6 +41,7 @@ const {
   walletBalance,
 } = useSolLinkForm();
 
+console.log(signature)
   return (
     <Card className="w-full overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm transition-all">
       <AlertDialogs

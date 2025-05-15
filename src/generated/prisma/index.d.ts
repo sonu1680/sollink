@@ -3238,14 +3238,14 @@ export namespace Prisma {
     id: string
     link: string
     claimed: boolean
-    date?: Date | string
+    date: Date | string
   }
 
   export type LinkUncheckedCreateInput = {
     id: string
     link: string
     claimed: boolean
-    date?: Date | string
+    date: Date | string
   }
 
   export type LinkUpdateInput = {
@@ -3266,7 +3266,7 @@ export namespace Prisma {
     id: string
     link: string
     claimed: boolean
-    date?: Date | string
+    date: Date | string
   }
 
   export type LinkUpdateManyMutationInput = {
