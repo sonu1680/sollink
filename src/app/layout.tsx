@@ -21,7 +21,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "SolLink",
   description: "Send Crypto. Share a Link. It’s That Simple.",
-  icons: "./solana.png",
+  icons: "/solana.ico",
 };
 
 export default function RootLayout({

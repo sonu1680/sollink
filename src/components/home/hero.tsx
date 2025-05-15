@@ -7,26 +7,30 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export function Hero() {
   const session=useSession();
   const router=useRouter()
   const{publicKey}=useWallet()
-const redirectPage=()=>{
   
-if(session.status=="authenticated"){
-  router.push("/wallet")
-}else if(publicKey){
-  router.push("/create");
+  const redirectPage = () => {
+    if (session.status == "authenticated") {
+      router.replace("/wallet");
+    } else if (publicKey) {
+      router.replace("/create");
+    } else {
+      toast({
+        title: "Please connect wallet or login with google to continue!",
+        variant: "destructive",
+      });
+    }
+  };
+  useEffect(()=>{
 
-}
-else{
-  toast({
-    title: "Please connect wallet or login with google to continue!",
-    variant: "destructive",
-  });
-}
-}
+    redirectPage();
+  },[session,publicKey])
+
 
   return (
     <section id="home" className="relative overflow-hidden pt-28  pb-16 md:pb-24">

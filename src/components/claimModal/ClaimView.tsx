@@ -5,12 +5,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
+import { getLink } from "@/app/actions/createLink";
 export default function ClaimView({params}:{params:string}) {
   const [step, setStep] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const[balance,setBalance]=useState<any>();
  const { connection } = useConnection();
-
+const [link,setLink]=useState(null)
   const handleStepChange = (newStep: number) => {
     if (isAnimating) return;
 
@@ -23,11 +24,19 @@ export default function ClaimView({params}:{params:string}) {
 
 useEffect(()=>{
    ( async()=> {
-     const keypairBytes = bs58.decode(params.toString());
- const sender = Keypair.fromSecretKey(keypairBytes);
-const bal= await connection.getBalance(sender.publicKey);
- setBalance(bal);
-})() ;;
+     setIsAnimating(true);
+     const res = await getLink(params);
+
+     //@ts-ignore
+     setLink(res.data);
+     //@ts-ignore
+
+     const keypairBytes = bs58.decode(res.data);
+     const sender = Keypair.fromSecretKey(keypairBytes);
+     const bal = await connection.getBalance(sender.publicKey);
+     setBalance(bal);
+     setIsAnimating(false);
+   })() ;;
 },[])
 
   return (
@@ -51,7 +60,13 @@ const bal= await connection.getBalance(sender.publicKey);
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <ClaimOptions params={params} balance={balance} onBack={() => handleStepChange(1)} />
+            {link && (
+              <ClaimOptions
+                params={link}
+                balance={balance}
+                onBack={() => handleStepChange(1)}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

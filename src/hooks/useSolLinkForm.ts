@@ -17,6 +17,7 @@ import { TokenPriceAtom } from "@/recoil/tokenPrice";
 import { useSession } from "next-auth/react";
 import { WalletAtom } from "@/recoil/wallet";
 import { Asset, AssetAccount } from "@/lib/types";
+import { generateLink } from "@/app/actions/createLink";
 
 export function useSolLinkForm() {
   const { toast } = useToast();
@@ -208,8 +209,15 @@ export function useSolLinkForm() {
       } else {
         txSig = await wallet.sendTransaction(trx, connection);
       }
+////implemt logic to store secret key in db with enscryption
 
-      setSignature(bs58.encode(key.secretKey));
+ const res = await generateLink(JSON.stringify(bs58.encode(key.secretKey)));
+ //@ts-ignore
+ setSignature(res.data);
+
+
+//setSignature(bs58.encode(key.secretKey));
+/////
       setTipLinkCreated(true);
       toast({ title: "SolLink created", description: txSig });
     } catch (err: any) {

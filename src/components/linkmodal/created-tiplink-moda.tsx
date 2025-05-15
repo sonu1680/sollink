@@ -16,7 +16,8 @@ import { Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transacti
 import bs58 from "bs58"
 import { toast } from "@/hooks/use-toast";
 import { useConnection } from "@solana/wallet-adapter-react";
-import { useRouter } from "next/navigation";
+
+
 interface CreatedTipLinkModalProps {
   open: boolean;
   onClose: () => void;
@@ -41,7 +42,6 @@ export default function CreatedTipLinkModal({
   const [showQR, setShowQR] = useState(false);
   const[loading,setLoading]=useState<boolean>(false)
 const {connection}=useConnection();
-const router=useRouter()
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(solLinkUrl);
@@ -86,7 +86,6 @@ const router=useRouter()
         transaction,
         [sender]
       );
-      //router.push("/create");
       setLoading(false);
       onClose();
       return toast({

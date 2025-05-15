@@ -17,6 +17,7 @@ const Provider = ({children}:any) => {
           <WalletProvider wallets={[]} autoConnect>
             <WalletModalProvider>
               <TokenpriceApi />
+
               {children}
             </WalletModalProvider>
           </WalletProvider>

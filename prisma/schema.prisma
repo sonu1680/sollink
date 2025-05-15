@@ -23,3 +23,10 @@ email String
 image String?
 keypair String
 }
+
+model Link{
+id String @id @unique
+link String 
+claimed Boolean 
+date   DateTime 
+}
